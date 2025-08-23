@@ -17,14 +17,14 @@ struct SmartLoggingSwiftLintBuildToolPlugin: BuildToolPlugin {
         guard target is SourceModuleTarget else { return [] }
 
         // Directorio de trabajo del paquete (donde vive .swiftlint.yml habitualmente)
-        let packageDir = context.package.directoryURL.path()
-        let cacheDir = context.pluginWorkDirectoryURL.path()
+        let packageDir = context.package.directory.string
+        let cacheDir = context.pluginWorkDirectory.string
 
         // Construimos un comando de shell de login (-l) y modo comando (-c):
         // 1) cd al paquete para que SwiftLint encuentre .swiftlint.yml
         // 2) invocar 'swiftlint' del sistema sin rutas
         // NOTA: no pasamos ficheros individuales; que resuelva la config/paths el propio SwiftLint
-        let shell = URL(fileURLWithPath: "/bin/sh")
+        let shell = Path("/bin/sh")
 
         // Permite inyectar flags opcionales desde el entorno (p. ej., en CI):
         let extra = ProcessInfo.processInfo.environment["SWIFTLINT_OPTIONS"] ?? ""
@@ -50,7 +50,7 @@ struct SmartLoggingSwiftLintBuildToolPlugin: BuildToolPlugin {
                 executable: shell,
                 arguments: ["-lc", command], // -l (login) + -c (command)
                 environment: env,
-                outputFilesDirectory: context.pluginWorkDirectoryURL
+                outputFilesDirectory: context.pluginWorkDirectory
             )
         ]
     }
