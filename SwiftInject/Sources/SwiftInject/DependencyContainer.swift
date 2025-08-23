@@ -1,7 +1,7 @@
 import Foundation
 
 /// Centralized dependency registration container
-public struct DependencyContainer {
+public struct DependencyContainer: Sendable {
     /// Register a dependency using a key path
     public static func register<T>(_ keyPath: WritableKeyPath<InjectedValues, T>, _ instance: T) {
         InjectedValues[keyPath] = instance
