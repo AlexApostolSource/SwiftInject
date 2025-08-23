@@ -7,9 +7,11 @@
 
 import Foundation
 
-public protocol InjectionKey {
+public protocol InjectionKey: Sendable {
     /// The associated type representing the type of the dependency injection key's value.
     associatedtype Value
     /// The default value for the dependency injection key.
-    static var currentValue: Self.Value { get set }
+    /// Marked as nonisolated(unsafe) to allow access from any context.
+    /// Thread safety is ensured by the lock mechanism in `InjectedValues`.
+    nonisolated(unsafe) static var currentValue: Self.Value { get set }
 }

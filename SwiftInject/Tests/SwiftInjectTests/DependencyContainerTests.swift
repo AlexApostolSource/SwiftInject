@@ -29,7 +29,7 @@ class TestNetworkService: NetworkService {
 // MARK: - Injection Keys for DependencyContainer Tests
 
 private struct NetworkServiceKey: InjectionKey {
-    nonisolated(unsafe) static var currentValue: NetworkService = MockNetworkService()
+    static var currentValue: NetworkService = MockNetworkService()
 }
 
 private struct ConfigKey: InjectionKey {
