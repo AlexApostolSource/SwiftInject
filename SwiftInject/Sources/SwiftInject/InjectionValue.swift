@@ -22,7 +22,7 @@ public struct InjectedValues: @unchecked Sendable {
     nonisolated(unsafe) private static var registeredKeyPaths: Set<String> = []
 
     /// A static subscript for updating the `currentValue` of `InjectionKey` instances.
-    static subscript<K>(key: K.Type) -> K.Value where K : InjectionKey {
+    static subscript<K>(key: K.Type) -> K.Value where K: InjectionKey {
         get {
             lock.withLock {
                 let keyId = ObjectIdentifier(key)
@@ -39,7 +39,12 @@ public struct InjectedValues: @unchecked Sendable {
                 // Check if this key is already registered
                 if overrides[keyId] != nil {
                     let keyName = String(describing: key)
-                    fatalError("Duplicate dependency registration detected for key: \(keyName). Dependencies can only be registered once.")
+                    fatalError(
+    """
+    Duplicate dependency registration detected for key: \(keyName). 
+    Dependencies can only be registered once.
+    """
+                    )
                 }
 
                 overrides[keyId] = newValue
@@ -58,7 +63,11 @@ public struct InjectedValues: @unchecked Sendable {
 
                 // Check if this KeyPath is already registered
                 if registeredKeyPaths.contains(keyPathString) {
-                    fatalError("Duplicate dependency registration detected for keyPath: \(keyPathString). Dependencies can only be registered once.")
+                    fatalError(
+ """
+  Duplicate dependency registration detected for key: \(keyPathString). 
+  """
+                    )
                 }
 
                 registeredKeyPaths.insert(keyPathString)

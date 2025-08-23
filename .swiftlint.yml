@@ -1,0 +1,69 @@
+# -------------------------------------------------------------------------
+# SwiftLint baseline para el paquete NetworkLayer
+# -------------------------------------------------------------------------
+
+# 1. Reglas deshabilitadas completamente
+disabled_rules: # rule identifiers to exclude from running
+  - nesting
+
+# 2. Reglas “opt-in” (requieren activación explícita)
+opt_in_rules:
+  - explicit_init
+  - strict_fileprivate
+  - sorted_imports
+  - closure_spacing
+  - unowned_variable_capture
+  - force_unwrapping
+  - identifier_name
+  - control_statement
+  - empty_count
+
+# 3. Umbrales y ajustes finos
+line_length:
+  warning: 120
+  error: 150
+  ignores_comments: true
+  ignores_urls: true
+  ignores_interpolated_strings: true
+
+function_body_length:
+  warning: 40
+  error: 60
+  ignore_comments: true
+  allow_one_line_functions: true
+
+type_body_length:
+  warning: 300
+  error: 400
+
+identifier_name:
+  min_length: 3
+  allowed_symbols: "_"
+  excluded:
+    - id
+    - URL
+
+cyclomatic_complexity:
+  warning: 10
+  error: 15
+  ignores_case_statements: true
+
+force_unwrapping:
+  severity: error
+
+unused_import:
+  severity: warning
+
+# 4. Carpetas ignoradas (swift package build / herramientas / dependencias)
+excluded:
+  - Tools
+  - .build
+  - Vendor
+  - Pods
+  - Carthage
+
+# 5. Formato de salida cuando lo invoca el plugin SPM
+reporter: "xcode"
+
+analyzer_rules:
+  - unused_import

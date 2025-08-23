@@ -10,16 +10,24 @@ let package = Package(
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "SwiftInject",
-            targets: ["SwiftInject"]),
+            targets: ["SwiftInject"])
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
+        .plugin(
+            name: "SwiftInjectSwiftLintBuildToolPlugin",
+            capability: .buildTool(),
+            path: "Plugins/SwiftInjectSwiftLintBuildToolPlugin"
+        ),
         .target(
-            name: "SwiftInject"),
+            name: "SwiftInject", plugins: [
+                .plugin(name: "SwiftInjectSwiftLintBuildToolPlugin")
+            ]),
         .testTarget(
             name: "SwiftInjectTests",
-            dependencies: ["SwiftInject"]
-        ),
+            dependencies: ["SwiftInject"],
+            plugins: [
+                .plugin(name: "SwiftInjectSwiftLintBuildToolPlugin")
+            ]
+        )
     ]
 )
