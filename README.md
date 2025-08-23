@@ -1,7 +1,7 @@
 # SwiftInject
 
 A Swift dependency injection library for iOS and macOS applications using a clean, static API.
-
+## [Documentation](https://deepwiki.com/AlexApostolSource/SwiftInject)
 ## Overview
 
 SwiftInject is a lightweight and powerful dependency injection framework designed specifically for Swift projects. It provides a clean and intuitive way to manage dependencies through static methods and property wrappers, making dependency injection simple and type-safe.
