@@ -10,18 +10,30 @@ public protocol InjectionKey {
 /// Provides access to injected dependencies.
 public struct InjectedValues: @unchecked Sendable {
     /// This is only used as an accessor to the computed properties within extensions of `InjectedValues`.
-    nonisolated(unsafe)  static var current = InjectedValues()
+    nonisolated(unsafe) static var current = InjectedValues()
 
     /// Thread-safe lock for protecting access to dependency values
-    private static let lock = NSRecursiveLock()
+    static let lock = NSRecursiveLock()
+
+    /// Centralized dictionary to store overridden dependency values
+    nonisolated(unsafe) private static var overrides: [ObjectIdentifier: Any] = [:]
 
     /// A static subscript for updating the `currentValue` of `InjectionKey` instances.
-   public static subscript<K>(key: K.Type) -> K.Value where K : InjectionKey {
+    public static subscript<K>(key: K.Type) -> K.Value where K : InjectionKey {
         get {
-            lock.withLock { key.currentValue }
+            lock.withLock {
+                let keyId = ObjectIdentifier(key)
+                if let override = overrides[keyId] as? K.Value {
+                    return override
+                }
+                return key.currentValue
+            }
         }
         set {
-            lock.withLock { key.currentValue = newValue }
+            lock.withLock {
+                let keyId = ObjectIdentifier(key)
+                overrides[keyId] = newValue
+            }
         }
     }
 
@@ -32,6 +44,14 @@ public struct InjectedValues: @unchecked Sendable {
         }
         set {
             lock.withLock { current[keyPath: keyPath] = newValue }
+        }
+    }
+
+    /// Reset all dependencies to their default values (useful for testing)
+    static func reset() {
+        lock.withLock {
+            overrides.removeAll()
+            current = InjectedValues()
         }
     }
 }
@@ -51,40 +71,28 @@ public struct Injected<T>: @unchecked Sendable {
 
 /// Centralized dependency registration container
 public struct DependencyContainer {
-    private static let lock = NSRecursiveLock()
-
     /// Register a dependency using a key path
     public static func register<T>(_ keyPath: WritableKeyPath<InjectedValues, T>, _ instance: T) {
-        lock.withLock {
-            InjectedValues[keyPath] = instance
-        }
+        InjectedValues[keyPath] = instance
     }
 
     /// Register a dependency using an injection key
     public static func register<K: InjectionKey>(_ keyType: K.Type, _ instance: K.Value) {
-        lock.withLock {
-            InjectedValues[keyType] = instance
-        }
+        InjectedValues[keyType] = instance
     }
 
     /// Reset all dependencies to their default values (useful for testing)
     public static func reset() {
-        lock.withLock {
-            InjectedValues.current = InjectedValues()
-        }
+        InjectedValues.reset()
     }
 
     /// Get the current value of a dependency
     public static func resolve<T>(_ keyPath: WritableKeyPath<InjectedValues, T>) -> T {
-        lock.withLock {
-            InjectedValues[keyPath]
-        }
+        InjectedValues[keyPath]
     }
 
     /// Get the current value using an injection key
     public static func resolve<K: InjectionKey>(_ keyType: K.Type) -> K.Value {
-        lock.withLock {
-            InjectedValues[keyType]
-        }
+        InjectedValues[keyType]
     }
 }
