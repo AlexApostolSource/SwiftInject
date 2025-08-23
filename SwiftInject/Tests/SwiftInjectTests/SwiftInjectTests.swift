@@ -70,135 +70,196 @@ final class SwiftInjectTests: XCTestCase {
 
     // MARK: - InjectionKey Tests
 
-    func testInjectionKeyDefaultValue() {
+    func test_injectionKey_whenAccessingDefault_shouldReturnDefaultValue() {
+        // Given: Default injection key configuration
+
+        // When: Accessing the service through injection key
         let service = InjectedValues[MockServiceKey.self]
+
+        // Then: Should return default value
         XCTAssertEqual(service.getValue(), "default")
     }
 
-    func testInjectionKeyOverride() {
+    func test_injectionKey_whenOverridingValue_shouldReturnNewValue() {
+        // Given: Test service instance
         let testService = TestMockService()
+
+        // When: Overriding injection key value
         InjectedValues[MockServiceKey.self] = testService
-
         let service = InjectedValues[MockServiceKey.self]
+
+        // Then: Should return overridden value
         XCTAssertEqual(service.getValue(), "test")
     }
 
-    func testMultipleInjectionKeys() {
-        InjectedValues[StringKey.self] = "custom string"
-        InjectedValues[IntKey.self] = 100
+    func test_injectionKey_whenSettingMultipleKeys_shouldMaintainSeparateValues() {
+        // Given: Multiple different values
+        let customString = "custom string"
+        let customInt = 100
 
-        XCTAssertEqual(InjectedValues[StringKey.self], "custom string")
-        XCTAssertEqual(InjectedValues[IntKey.self], 100)
+        // When: Setting multiple injection keys
+        InjectedValues[StringKey.self] = customString
+        InjectedValues[IntKey.self] = customInt
+
+        // Then: Should maintain separate values for each key
+        XCTAssertEqual(InjectedValues[StringKey.self], customString)
+        XCTAssertEqual(InjectedValues[IntKey.self], customInt)
     }
 
-    // MARK: - KeyPath Tests
+    // MARK: - KeyPath Access Tests
 
-    func testKeyPathAccess() {
+    func test_keyPathAccess_whenAccessingDefault_shouldReturnDefaultValue() {
+        // Given: Default keyPath configuration
+
+        // When: Accessing service through keyPath
         let service = InjectedValues[\.mockService]
+
+        // Then: Should return default value
         XCTAssertEqual(service.getValue(), "default")
     }
 
-    func testKeyPathOverride() {
+    func test_keyPathAccess_whenOverridingValue_shouldReturnNewValue() {
+        // Given: Test service instance
         let testService = TestMockService()
-        InjectedValues[\.mockService] = testService
 
+        // When: Overriding keyPath value
+        InjectedValues[\.mockService] = testService
         let service = InjectedValues[\.mockService]
+
+        // Then: Should return overridden value
         XCTAssertEqual(service.getValue(), "test")
     }
 
-    // MARK: - PropertyWrapper Tests
+    // MARK: - Property Wrapper Tests
 
-    func testInjectedPropertyWrapper() {
+    func test_injectedPropertyWrapper_whenCreatingInstance_shouldInjectDefaultValue() {
+        // Given: Class with injected property
         class TestClass {
             @Injected(\.mockService) var service: MockService
         }
 
+        // When: Creating instance
         let testInstance = TestClass()
+
+        // Then: Should inject default value
         XCTAssertEqual(testInstance.service.getValue(), "default")
     }
 
-    func testInjectedPropertyWrapperWithOverride() {
+    func test_injectedPropertyWrapper_whenDependencyRegistered_shouldInjectRegisteredValue() {
+        // Given: Class with injected property and registered dependency
         class TestClass {
             @Injected(\.mockService) var service: MockService
         }
-
         DependencyContainer.register(\.mockService, TestMockService())
 
+        // When: Creating instance
         let testInstance = TestClass()
+
+        // Then: Should inject registered value
         XCTAssertEqual(testInstance.service.getValue(), "test")
     }
 
-    func testInjectedPropertyWrapperSetter() {
+    func test_injectedPropertyWrapper_whenSettingValue_shouldUpdateGlobalState() {
+        // Given: Class with injected property
         class TestClass {
             @Injected(\.testString) var value: String
         }
-
         let testInstance = TestClass()
-        testInstance.value = "modified"
+        let newValue = "modified"
 
-        XCTAssertEqual(testInstance.value, "modified")
-        XCTAssertEqual(InjectedValues[\.testString], "modified")
+        // When: Setting value through property wrapper
+        testInstance.value = newValue
+
+        // Then: Should update both property and global state
+        XCTAssertEqual(testInstance.value, newValue)
+        XCTAssertEqual(InjectedValues[\.testString], newValue)
     }
 
-    // MARK: - DependencyContainer Tests
+    // MARK: - DependencyContainer Registration Tests
 
-    func testDependencyContainerRegisterWithKeyPath() {
-        DependencyContainer.register(\.mockService, TestMockService())
-
-        let service = DependencyContainer.resolve(\.mockService)
-        XCTAssertEqual(service.getValue(), "test")
-    }
-
-    func testDependencyContainerRegisterWithInjectionKey() {
+    func test_dependencyContainer_whenRegisteringWithKeyPath_shouldResolveRegisteredValue() {
+        // Given: Test service instance
         let testService = TestMockService()
-        DependencyContainer.register(MockServiceKey.self, testService)
 
-        let service = DependencyContainer.resolve(MockServiceKey.self)
-        XCTAssertEqual(service.getValue(), "test")
+        // When: Registering dependency with keyPath
+        DependencyContainer.register(\.mockService, testService)
+        let resolvedService = DependencyContainer.resolve(\.mockService)
+
+        // Then: Should resolve registered value
+        XCTAssertEqual(resolvedService.getValue(), "test")
     }
 
-    func testDependencyContainerResolveWithKeyPath() {
+    func test_dependencyContainer_whenRegisteringWithInjectionKey_shouldResolveRegisteredValue() {
+        // Given: Test service instance
+        let testService = TestMockService()
+
+        // When: Registering dependency with injection key
+        DependencyContainer.register(MockServiceKey.self, testService)
+        let resolvedService = DependencyContainer.resolve(MockServiceKey.self)
+
+        // Then: Should resolve registered value
+        XCTAssertEqual(resolvedService.getValue(), "test")
+    }
+
+    func test_dependencyContainer_whenResolvingWithKeyPath_shouldReturnCurrentValue() {
+        // Given: Modified global state
         InjectedValues[\.testString] = "custom"
 
-        let value = DependencyContainer.resolve(\.testString)
-        XCTAssertEqual(value, "custom")
+        // When: Resolving with keyPath
+        let resolvedValue = DependencyContainer.resolve(\.testString)
+
+        // Then: Should return current value
+        XCTAssertEqual(resolvedValue, "custom")
     }
 
-    func testDependencyContainerResolveWithInjectionKey() {
+    func test_dependencyContainer_whenResolvingWithInjectionKey_shouldReturnCurrentValue() {
+        // Given: Modified global state
         InjectedValues[StringKey.self] = "custom"
 
-        let value = DependencyContainer.resolve(StringKey.self)
-        XCTAssertEqual(value, "custom")
+        // When: Resolving with injection key
+        let resolvedValue = DependencyContainer.resolve(StringKey.self)
+
+        // Then: Should return current value
+        XCTAssertEqual(resolvedValue, "custom")
     }
 
-    // MARK: - Reset Tests
+    // MARK: - Reset Functionality Tests
 
-    func testResetWithKeyPath() {
+    func test_reset_whenCalledAfterKeyPathRegistration_shouldRestoreDefaultValue() {
+        // Given: Registered dependency
         DependencyContainer.register(\.mockService, TestMockService())
         XCTAssertEqual(DependencyContainer.resolve(\.mockService).getValue(), "test")
 
+        // When: Resetting container
         DependencyContainer.reset()
 
+        // Then: Should restore default value
         let service = DependencyContainer.resolve(\.mockService)
         XCTAssertEqual(service.getValue(), "default")
     }
 
-    func testResetWithInjectionKey() {
+    func test_reset_whenCalledAfterInjectionKeyRegistration_shouldRestoreDefaultValue() {
+        // Given: Registered dependency
         DependencyContainer.register(StringKey.self, "custom")
         XCTAssertEqual(DependencyContainer.resolve(StringKey.self), "custom")
 
+        // When: Resetting container
         DependencyContainer.reset()
 
+        // Then: Should restore default value
         XCTAssertEqual(DependencyContainer.resolve(StringKey.self), "default string")
     }
 
-    func testResetResetsAllDependencies() {
+    func test_reset_whenMultipleDependenciesRegistered_shouldRestoreAllDefaultValues() {
+        // Given: Multiple registered dependencies
         DependencyContainer.register(\.mockService, TestMockService())
         DependencyContainer.register(StringKey.self, "custom")
         DependencyContainer.register(IntKey.self, 999)
 
+        // When: Resetting container
         DependencyContainer.reset()
 
+        // Then: Should restore all default values
         XCTAssertEqual(DependencyContainer.resolve(\.mockService).getValue(), "default")
         XCTAssertEqual(DependencyContainer.resolve(StringKey.self), "default string")
         XCTAssertEqual(DependencyContainer.resolve(IntKey.self), 42)
@@ -206,12 +267,13 @@ final class SwiftInjectTests: XCTestCase {
 
     // MARK: - Thread Safety Tests
 
-    func testConcurrentAccess() {
+    func test_concurrentAccess_whenMultipleThreadsModifying_shouldMaintainDataIntegrity() {
+        // Given: Concurrent execution expectation
         let expectation = XCTestExpectation(description: "Concurrent access completed")
         expectation.expectedFulfillmentCount = 100
-
         let queue = DispatchQueue.global(qos: .default)
 
+        // When: Multiple threads modify and read simultaneously
         for i in 0..<100 {
             queue.async {
                 DependencyContainer.register(IntKey.self, i)
@@ -221,18 +283,18 @@ final class SwiftInjectTests: XCTestCase {
             }
         }
 
+        // Then: All operations should complete successfully
         wait(for: [expectation], timeout: 5.0)
     }
 
-    func testConcurrentResetAndAccess() {
+    func test_concurrentResetAndAccess_whenSimultaneousOperations_shouldMaintainDataIntegrity() {
+        // Given: Concurrent execution setup
         let expectation = XCTestExpectation(description: "Concurrent reset and access completed")
         expectation.expectedFulfillmentCount = 50
-
         let queue = DispatchQueue.global(qos: .default)
-
-        // Registrar valor inicial
         DependencyContainer.register(StringKey.self, "initial")
 
+        // When: Multiple threads reset and access simultaneously
         for _ in 0..<25 {
             queue.async {
                 DependencyContainer.reset()
@@ -246,13 +308,14 @@ final class SwiftInjectTests: XCTestCase {
             }
         }
 
+        // Then: All operations should complete without data corruption
         wait(for: [expectation], timeout: 5.0)
     }
 
     // MARK: - Integration Tests
 
-    func testCompleteWorkflow() {
-        // Test de flujo completo
+    func test_completeWorkflow_whenUsingFullDependencyInjectionFlow_shouldWorkCorrectly() {
+        // Given: Service consumer with injected dependencies
         class ServiceConsumer {
             @Injected(\.mockService) var service: MockService
             @Injected(\.testString) var message: String
@@ -261,23 +324,22 @@ final class SwiftInjectTests: XCTestCase {
                 return "\(message): \(service.getValue())"
             }
         }
-
         let consumer = ServiceConsumer()
 
-        // Valores por defecto
+        // When & Then: Testing default values
         XCTAssertEqual(consumer.process(), "default string: default")
 
-        // Registrar dependencias
+        // When: Registering dependencies
         DependencyContainer.register(\.mockService, TestMockService())
         DependencyContainer.register(\.testString, "Hello")
 
-        // Verificar cambios
+        // Then: Should use registered values
         XCTAssertEqual(consumer.process(), "Hello: test")
 
-        // Reset
+        // When: Resetting container
         DependencyContainer.reset()
 
-        // Verificar reset
+        // Then: Should return to default values
         XCTAssertEqual(consumer.process(), "default string: default")
     }
 }
