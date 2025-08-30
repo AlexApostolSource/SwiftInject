@@ -4,9 +4,8 @@
 //
 //  Created by Alex.personal on 23/8/25.
 //
-
-import XCTest
 @testable import SwiftInject
+import XCTest
 
 // MARK: - Test Dependencies for DependencyContainer
 

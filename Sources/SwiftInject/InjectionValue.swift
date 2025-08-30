@@ -39,12 +39,7 @@ public struct InjectedValues: @unchecked Sendable {
                 // Check if this key is already registered
                 if overrides[keyId] != nil {
                     let keyName = String(describing: key)
-                    fatalError(
-    """
-    Duplicate dependency registration detected for key: \(keyName). 
-    Dependencies can only be registered once.
-    """
-                    )
+                    fatalError("Duplicate dependency registration detected for key: \(keyName).")
                 }
 
                 overrides[keyId] = newValue
@@ -63,11 +58,7 @@ public struct InjectedValues: @unchecked Sendable {
 
                 // Check if this KeyPath is already registered
                 if registeredKeyPaths.contains(keyPathString) {
-                    fatalError(
- """
-  Duplicate dependency registration detected for key: \(keyPathString). 
-  """
-                    )
+                    fatalError("Duplicate dependency registration detected for key: \(keyPathString).")
                 }
 
                 registeredKeyPaths.insert(keyPathString)

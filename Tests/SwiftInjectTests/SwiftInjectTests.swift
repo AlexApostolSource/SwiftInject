@@ -1,5 +1,5 @@
-import XCTest
 @testable import SwiftInject
+import XCTest
 
 // MARK: - Test Dependencies (at file scope)
 
